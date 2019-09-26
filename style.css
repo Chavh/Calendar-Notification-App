@@ -1,0 +1,44 @@
+#container {
+    display: none;
+    width: 1200px; 
+    margin : 0 auto;
+    border-top: 1px solid black;
+    font-family: arial, verdana, sans-serif; /*standard font type on webpage*/
+}
+
+#left {
+    flex:1;
+    background-color:azure;
+    padding: 1rem;
+}
+
+#right {
+    flex:3;
+    background-color: azure;
+    
+}
+
+
+#right {
+    height:100vh;
+    
+}
+
+.row {
+    display: flex;
+}
+
+
+.row-left {
+    flex:1;
+    padding: 1rem;
+    background-color: azure;
+    font-weight: bold;  
+}
+
+.row-right {
+    flex:2;
+    padding: 1rem;
+    background-color: azure;
+
+}
