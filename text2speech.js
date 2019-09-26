@@ -216,12 +216,12 @@
   //convert integer day to day in words
   function abbrevDayOfWeek(day) {
     let day_array = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-    return day_array[day-1];
+    return day_array[day];
   }
 
   //function to convert date digit to word
-  function abbrevMonth(day) {
+  function abbrevMonth(month) {
     let day_array = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-    return day_array[day-1];
+    return day_array[month-1];
   }
   
