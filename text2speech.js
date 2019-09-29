@@ -1,6 +1,6 @@
  // Client ID and API key from the Developer Console
- var CLIENT_ID = '38305438108-ba8il2foc7fbcs9j169lqghmp7nn702r.apps.googleusercontent.com';
- var API_KEY = 'AIzaSyDK-pM4i79vYDa-qrPC1Ghu2hiN7K2v-Hk';
+ var CLIENT_ID = 'CLIENT_ID';
+ var API_KEY = 'API_KEY';
  // Array of API discovery doc URLs for APIs used by the quickstart
  var DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"];
  // Authorization scopes required by the API; multiple scopes can be
@@ -79,6 +79,7 @@
    var textContent = document.createTextNode(message + '\n');
    pre.appendChild(textContent);
  }
+
  /**
   * Print the summary and start datetime/date of the next ten events in
   * the authorized user's calendar. If no events are found an
@@ -91,19 +92,20 @@
      'timeMin': (new Date()).toISOString(),
      'showDeleted': false,
      'singleEvents': true,
-     'maxResults': 10,
      'orderBy': 'startTime'
    }).then(function(response) {
 
       let eventString ='';
-      let attendence = '';
+      var attendence = '';
       let timeToEvent = 0;
       let countUnnamedAttendees = 0;
       events = response.result.items;
       createDateElement();
+
+      events=events.filter(checkTimeToEvent);
     
-     if (events.length > 0) {
-       for (i = 0; i < events.length; i++) {
+      if (events.length > 0) {
+        for (i = 0; i < events.length; i++) {
          let event = events[i];
          
          let when = event.start.dateTime;
@@ -111,46 +113,56 @@
          let startDate = new Date(when);
          let endDate = new Date(last);
          let startTime_endTime = startDate.getHours()+':'+startDate.getMinutes()+' - '+endDate.getHours()+':'+endDate.getMinutes();
+         
          if (!when) {
            when = event.start.date;
          }
          //Add attendee names 
-           for(x=1; x<events[i].attendees['length']; x++){
-             if (undefined===events[i].attendees[x].displayName){
-              countUnnamedAttendees += 1;
-             }
-             else{
-              attendence += events[i].attendees[x].displayName+', ';
-             }
-           }
+         if (undefined!= events[i].attendees){
+          for(x=1; x<events[i].attendees['length']; x++){
+            if (undefined===events[i].attendees[x].displayName){
+             countUnnamedAttendees += 1;
+            }
+            else{
+             attendence += events[i].attendees[x].displayName+', ';
+            }
+          }
+         } 
            attendence += countUnnamedAttendees+' other unnamed people';
            timeToEvent = startDate.getTime()-(new Date()).getTime();
-           if(timeToEvent > 0){
-    
-            let notifyUser = 'Five minutes left to the event with summary ' +' '+event.summary +' attended by '+ attendence; 
-            eventString = event.summary + notifyUser;
-            createElement(eventString, timeFrame);
+           var Notify5minsBeforeTime = timeToEvent-300000;
+
+          //reload when event starts
+          setTimeout(function(){
+            window.location.replace(window.location.pathname + window.location.search + window.location.hash);
+          },timeToEvent);
+      
+          let notifyUser = ' Five minutes left to '+event.summary +' attended by '+ attendence; 
+          
+          eventString = event.summary; // display event summary
+         
+          //add location if available
+          if(undefined != event.location){
+            eventString = eventString +' at '+ event.location ;
+         }
+          createElement(eventString, startTime_endTime);
             
-            //notify user 5 mins before event
-            setTimeout(function(){
-              let utterance = new SpeechSynthesisUtterance(notifyUser);
-             window.speechSynthesis.speak(utterance);
-             window.location.replace(window.location.pathname + window.location.search + window.location.hash);
-            }, timeToEvent);
-            attendence = '';//clear attendence
-          } 
-           else {
-            service.events.delete('primary', 'eventId');
-          } 
+          //notify user 5 mins before event
+          setTimeout(function(){
+           var utterance = new SpeechSynthesisUtterance(notifyUser);
+           window.speechSynthesis.speak(utterance);
+          },Notify5minsBeforeTime);
+           
+          attendence = ''; //clear attendence 
+          eventString = ''; //clear eventString
         }
-     } 
-     else {
-       
-       createElement('No upcoming events found.', '');
-       
-     }  
+
+      }
+      else {
+          createElement('No upcoming events found.', '');
+      }  
    });
- }
+  }
 
 //Function to create element with event time period and summary
  function createElement(stringInput, beginEndTime) {
@@ -220,8 +232,17 @@
   }
 
   //function to convert date digit to word
-  function abbrevMonth(month) {
+  function abbrevMonth(day) {
     let day_array = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-    return day_array[month-1];
+    return day_array[day-1];
   }
-  
+
+  //function to check time to event inorder to skip already started events.
+ function checkTimeToEvent(event){
+  let when = event.start.dateTime;
+  let startDate = new Date(when);
+  let time2Event = startDate.getTime()-(new Date()).getTime();
+  if (time2Event > 0){
+    return event;
+  }
+ }
